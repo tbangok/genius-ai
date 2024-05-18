@@ -2,7 +2,7 @@
 import axios from "axios";
 import * as z from "zod";
 import { Heading } from "@/components/heading";
-import { MessageSquare } from "lucide-react";
+import { Code } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,9 @@ import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 import { cn } from "@/lib/utils";
 
-const Conversation = () => {
+import ReactMarkdown from "react-markdown";
+
+const CodeGen = () => {
   const router = useRouter();
 
   const [messages, setMessages] = useState<
@@ -43,7 +45,7 @@ const Conversation = () => {
 
       const newMessages = [...messages, userMessage];
 
-      const response = await axios.post("/api/conversation", {
+      const response = await axios.post("/api/code", {
         messages: newMessages,
       });
 
@@ -61,11 +63,11 @@ const Conversation = () => {
   return (
     <div>
       <Heading
-        title="Conversation"
-        description="Our most advanced conversation model"
-        icon={MessageSquare}
-        iconColor="text-violet-500"
-        bgColor="bg-violet-500/10"
+        title="Code Generation"
+        description="Generate code using descriptive text"
+        icon={Code}
+        iconColor="text-green-500"
+        bgColor="bg-green-500/10"
       />
       <div className="px-4 lg:px-8">
         <div>
@@ -82,7 +84,7 @@ const Conversation = () => {
                       <Input
                         className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                         disabled={isLoading}
-                        placeholder="Ask me anything..."
+                        placeholder="Simple toggle button using react hooks."
                         {...field}
                       />
                     </FormControl>
@@ -119,11 +121,23 @@ const Conversation = () => {
                 )}
               >
                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                <p className="text-sm">
+                <ReactMarkdown
+                  components={{
+                    pre: ({ node, ...props }) => (
+                      <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
+                        <pre {...props} />
+                      </div>
+                    ),
+                    code: ({ node, ...props }) => (
+                      <code className="bg-black/10 rounded-lg p-1" {...props} />
+                    ),
+                  }}
+                  className="text-sm overflow-hidden leading-7"
+                >
                   {typeof message.content === "string"
                     ? message.content
                     : "Unsupported message format"}
-                </p>
+                </ReactMarkdown>
               </div>
             ))}
           </div>
@@ -133,4 +147,4 @@ const Conversation = () => {
   );
 };
 
-export default Conversation;
+export default CodeGen;
