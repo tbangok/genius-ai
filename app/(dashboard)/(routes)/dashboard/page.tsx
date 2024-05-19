@@ -5,7 +5,7 @@ import {
   Code,
   ImageIcon,
   MessageSquare,
-  Music,
+  Volume2,
   Settings,
   VideoIcon,
 } from "lucide-react";
@@ -36,9 +36,9 @@ const tools = [
     bgColor: "bg-orange-500/10",
   },
   {
-    label: "Music Generation",
-    icon: Music,
-    href: "/music",
+    label: "Text To Speech Generation",
+    icon: Volume2,
+    href: "/text-to-speech",
     bgColor: "bg-red-500/10",
     color: "text-red-500",
   },

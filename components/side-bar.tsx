@@ -6,7 +6,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   MessageSquare,
-  Music,
+  Volume2,
   Settings,
   VideoIcon,
 } from "lucide-react";
@@ -43,9 +43,9 @@ const routes = [
     color: "text-orange-500",
   },
   {
-    label: "Music Generation",
-    icon: Music,
-    href: "/music",
+    label: "Text To Speech Generation",
+    icon: Volume2,
+    href: "/text-to-speech",
     color: "text-red-500",
   },
   {
