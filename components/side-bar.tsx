@@ -9,6 +9,7 @@ import {
   Volume2,
   Settings,
   VideoIcon,
+  Text,
 } from "lucide-react";
 import { Montserrat } from "next/font/google";
 import Image from "next/image";
@@ -49,10 +50,16 @@ const routes = [
     color: "text-red-500",
   },
   {
+    label: "Speech To Text Generation",
+    icon: Text,
+    href: "/speech-to-text", 
+    color: "text-yellow-700",
+  },
+  {
     label: "Code Generation",
     icon: Code,
     href: "/code",
-    color: "text-green-500",
+    color: "text-green-600",
   },
   {
     label: "Settings",

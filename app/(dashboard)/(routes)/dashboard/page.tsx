@@ -8,6 +8,7 @@ import {
   Volume2,
   Settings,
   VideoIcon,
+  Text,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -43,11 +44,18 @@ const tools = [
     color: "text-red-500",
   },
   {
+    label: "Speech To Text Generation",
+    icon: Text,
+    href: "/speech-to-text",
+    bgColor: "bg-yellow-700/10",
+    color: "text-yellow-700",
+  },
+  {
     label: "Code Generation",
     icon: Code,
     href: "/code",
-    bgColor: "bg-green-500/10",
-    color: "text-green-500",
+    bgColor: "bg-green-600/10",
+    color: "text-green-600",
   },
 ];
 

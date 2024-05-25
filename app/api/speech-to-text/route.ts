@@ -1,115 +1,59 @@
-// import { auth } from "@clerk/nextjs/server";
-// import { NextResponse } from "next/server";
-// import OpenAI from "openai";
-// import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-// import fs from "fs";
-// import path from "path";
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
-
-// const speechFile = path.resolve("./speech.mp3");
-// // const instructionMessage: ChatCompletionMessageParam = {
-// //   role: "system",
-// //   content:
-// //     "Answer questions as short and quickly as possible. You must do it under 75 tokens.",
-// // };
-
-// export async function POST(req: Request) {
-//   try {
-//     const { userId } = auth();
-//     const body = await req.json();
-//     const { prompt, voice = "alloy" } = body;
-
-//     if (!userId) {
-//       return new NextResponse("Unauthorized", { status: 401 });
-//     }
-
-//     if (!openai.apiKey) {
-//       return new NextResponse("OpenAI API Key not configured.", {
-//         status: 500,
-//       });
-//     }
-
-//     if (!prompt) {
-//       return new NextResponse("Prompt is required", { status: 400 });
-//     }
-//     if (!voice) {
-//       return new NextResponse("Voice is required", { status: 400 });
-//     }
-
-//     const mp3 = await openai.audio.speech.create({
-//       model: "tts-1",
-//       voice: voice,
-//       input: "Today is a wonderful day to build something people love!",
-//     });
-//     console.log(speechFile);
-//     const buffer = Buffer.from(await mp3.arrayBuffer());
-//     await fs.promises.writeFile(speechFile, buffer);
-//     // mp3.stream_to_file(speechFile)
-//   } catch (error) {
-//     console.log("[VOICE_ERROR]", error);
-//     return new NextResponse("Internal Error", { status: 500 });
-//   }
-// }
-
-
-
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import fs from "fs";
-import path from "path";
+import formidable from "formidable";
+import { createReadStream } from "fs";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const speechFile = path.resolve("./public/speech.mp3"); // Ensure the path is within the public directory
+const parseForm = (req: NextApiRequest) =>
+  new Promise<{ fields: formidable.Fields; files: formidable.Files }>(
+    (resolve, reject) => {
+      const form = new formidable.IncomingForm();
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ fields, files });
+        }
+      });
+    }
+  );
 
-export async function POST(req: Request) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { userId } = auth();
-    const body = await req.json();
-    const { prompt, voice = "alloy" } = body;
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     if (!openai.apiKey) {
-      return NextResponse.json(
-        { error: "OpenAI API Key not configured." },
-        { status: 500 }
-      );
+      return res.status(500).json({ error: "OpenAI API Key not configured." });
     }
+
+    const { fields, files } = await parseForm(req);
+    const { prompt } = fields;
+    const file = files.file;
 
     if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 }
-      );
-    }
-    if (!voice) {
-      return NextResponse.json({ error: "Voice is required" }, { status: 400 });
+      return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const response = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: voice,
-      input: prompt,
+    if (!file) {
+      return res.status(400).json({ error: "File is required" });
+    }
+
+    const transcription = await openai.audio.transcriptions.create({
+      file: createReadStream(file.path),
+      model: "whisper-1",
     });
 
-    const buffer = Buffer.from(await response.arrayBuffer());
-    await fs.promises.writeFile(speechFile, buffer);
-
-    // Send the URL of the saved audio file back to the client
-    return NextResponse.json({ url: "/speech.mp3" });
+    return res.status(200).json({ transcription: transcription.text });
   } catch (error) {
     console.error("[VOICE_ERROR]", error);
-    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+    return res.status(500).json({ error: "Internal Error" });
   }
 }
-
